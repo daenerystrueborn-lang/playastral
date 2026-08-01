@@ -33,8 +33,11 @@ function OwnProfile() {
   const qc = useQueryClient();
   const updateMutation = useUpdatePlayer();
 
-  const { data: cards } = useGetMyCards({ query: { enabled: !!currentPlayer } });
-  const { data: pokemon } = useGetMyPokemon({ query: { enabled: !!currentPlayer } });
+  const { data: cardsResponse } = useGetMyCards({ query: { enabled: !!currentPlayer } });
+  const { data: pokemonResponse } = useGetMyPokemon({ query: { enabled: !!currentPlayer } });
+  // GET /api/players/me/cards sends { cards: [...] }, /pokemon sends { pokemon: [...] }.
+  const cards = Array.isArray(cardsResponse) ? cardsResponse : (cardsResponse as any)?.cards;
+  const pokemon = Array.isArray(pokemonResponse) ? pokemonResponse : (pokemonResponse as any)?.pokemon;
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -55,7 +58,7 @@ function OwnProfile() {
   function startEdit() {
     setName(currentPlayer!.name ?? '');
     setBio(currentPlayer!.bio ?? '');
-    setAvatarUrl(currentPlayer!.avatarUrl ?? '');
+    setAvatarUrl((currentPlayer as any)!.pfp ?? '');
     setError('');
     setEditing(true);
   }
@@ -66,7 +69,9 @@ function OwnProfile() {
       { data: { name: name || undefined, bio: bio || undefined, avatarUrl: avatarUrl || undefined } },
       {
         onSuccess: (updated) => {
-          setCurrentPlayer(updated);
+          // PATCH /api/players/me sends { player: {...} } — unwrap it.
+          const updatedPlayer = (updated as any)?.player ?? updated;
+          setCurrentPlayer(updatedPlayer);
           qc.invalidateQueries({ queryKey: getGetMeQueryKey() });
           setEditing(false);
         },
@@ -78,17 +83,11 @@ function OwnProfile() {
   return (
     <PageWrapper>
       <div className="max-w-2xl mx-auto">
-        {/* Banner */}
+        {/* Banner — no bannerUrl field exists server-side; using a static gradient instead */}
         <div
           className="w-full h-32 sm:h-44 rounded-2xl mb-[-2.5rem] overflow-hidden border"
-          style={{ borderColor: '#23262f' }}
-        >
-          <img
-            src={currentPlayer.bannerUrl || '/default-banner.png'}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
+          style={{ borderColor: '#23262f', background: 'linear-gradient(135deg, rgba(78,143,255,0.15), rgba(62,207,142,0.08))' }}
+        />
 
         {/* Header */}
         <div className="flex items-start gap-5 mb-8 relative">
@@ -102,7 +101,7 @@ function OwnProfile() {
             }}
           >
             <img
-              src={currentPlayer.avatarUrl || '/default-pfp.png'}
+              src={(currentPlayer as any).pfp || '/default-pfp.png'}
               alt=""
               className="w-full h-full object-cover rounded-2xl"
             />
@@ -116,12 +115,12 @@ function OwnProfile() {
               >
                 {currentPlayer.name ?? 'Unnamed Trainer'}
               </h1>
-              {currentPlayer.premiumActive && (
+              {(currentPlayer as any).premium?.active && (
                 <span
                   className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                   style={{ background: '#ffc94d22', color: '#ffc94d', border: '1px solid #ffc94d44', fontFamily: 'JetBrains Mono, monospace' }}
                 >
-                  {currentPlayer.premiumPlan ?? 'Premium'}
+                  Premium
                 </span>
               )}
             </div>
@@ -166,7 +165,7 @@ function OwnProfile() {
           <StatCard label="Level" value={String(currentPlayer.level)} />
           <StatCard label="XP" value={(currentPlayer.xp ?? 0).toLocaleString()} />
           <StatCard label="Solars" value={(currentPlayer.wallet?.solars ?? 0).toLocaleString()} />
-          <StatCard label="Streak" value={`${currentPlayer.dailyStreak ?? 0}d`} />
+          <StatCard label="Gems" value={((currentPlayer as any).wallet?.gems ?? 0).toLocaleString()} />
         </div>
 
         {/* Collections */}
@@ -182,7 +181,9 @@ function OwnProfile() {
 // ─── Public Profile ───────────────────────────────────────────────────────────
 
 function PublicProfile({ id }: { id: string }) {
-  const { data: player, isLoading, error } = useGetPlayer(id);
+  const { data: playerResponse, isLoading, error } = useGetPlayer(id);
+  // GET /api/players/:id sends { player: {...} } — unwrap it.
+  const player = (playerResponse as any)?.player ?? playerResponse;
 
   if (isLoading) {
     return (
@@ -210,16 +211,11 @@ function PublicProfile({ id }: { id: string }) {
   return (
     <PageWrapper>
       <div className="max-w-2xl mx-auto">
+        {/* Banner — no bannerUrl field exists server-side; using a static gradient instead */}
         <div
           className="w-full h-32 sm:h-44 rounded-2xl mb-[-2.5rem] overflow-hidden border"
-          style={{ borderColor: '#23262f' }}
-        >
-          <img
-            src={player.bannerUrl || '/default-banner.png'}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
+          style={{ borderColor: '#23262f', background: 'linear-gradient(135deg, rgba(78,143,255,0.15), rgba(62,207,142,0.08))' }}
+        />
 
         <div className="flex items-start gap-5 mb-8 relative">
           <div
@@ -232,7 +228,7 @@ function PublicProfile({ id }: { id: string }) {
             }}
           >
             <img
-              src={player.avatarUrl || '/default-pfp.png'}
+              src={(player as any).pfp || '/default-pfp.png'}
               alt=""
               className="w-full h-full object-cover rounded-2xl"
             />
@@ -242,12 +238,12 @@ function PublicProfile({ id }: { id: string }) {
               <h1 className="text-2xl font-extrabold" style={{ fontFamily: 'Syne, sans-serif' }}>
                 {player.name ?? 'Unnamed Trainer'}
               </h1>
-              {player.premiumActive && (
+              {(player as any).premium?.active && (
                 <span
                   className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                   style={{ background: '#ffc94d22', color: '#ffc94d', border: '1px solid #ffc94d44', fontFamily: 'JetBrains Mono, monospace' }}
                 >
-                  {player.premiumPlan ?? 'Premium'}
+                  Premium
                 </span>
               )}
             </div>

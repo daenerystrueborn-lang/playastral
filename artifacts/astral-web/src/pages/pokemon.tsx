@@ -10,9 +10,14 @@ import { CatchAttemptBallType } from '@workspace/api-client-react';
 export function PokemonPage() {
   const { currentPlayer } = useAuth();
   const [selectedBall, setSelectedBall] = useState<CatchAttemptBallType>('poke');
-  const [selectedPokemon, setSelectedPokemon] = useState<number | null>(null);
+  const [selectedPokemon, setSelectedPokemon] = useState<any | null>(null);
 
-  const { data: wildPokemon, isLoading: wildLoading } = useGetWildPokemon({ count: 6 });
+  const { data: wildPokemonResponse, isLoading: wildLoading } = useGetWildPokemon({ count: 6 });
+  // GET /api/pokemon/wild sends { pokemon: [...] } — unwrap the same way
+  // every other list endpoint in this app needed to be.
+  const wildPokemon = Array.isArray(wildPokemonResponse)
+    ? wildPokemonResponse
+    : (wildPokemonResponse as { pokemon?: typeof wildPokemonResponse } | undefined)?.pokemon;
   const { data: balls } = useGetPokeBalls({ query: { enabled: !!currentPlayer } });
   const catchMutation = useCatchPokemon();
   const queryClient = useQueryClient();
@@ -20,8 +25,12 @@ export function PokemonPage() {
   const handleCatch = () => {
     if (!selectedPokemon || !currentPlayer) return;
 
+    // Server requires the FULL wild-encounter object here (not just a
+    // dexId) — re-fetching by dexId server-side would re-roll shiny odds
+    // independently of what the player saw in the encounter list. See the
+    // comment on POST /api/pokemon/catch in api-server.js.
     catchMutation.mutate(
-      { data: { dexId: selectedPokemon, ballType: selectedBall } },
+      { data: { pokemon: selectedPokemon, ballType: selectedBall } },
       {
         onSuccess: (result) => {
           queryClient.invalidateQueries({ queryKey: getGetPokeBallsQueryKey() });
@@ -147,15 +156,15 @@ export function PokemonPage() {
                 <div
                   key={pokemon.dexId}
                   className={`p-4 bg-[#0e1015] border rounded-2xl cursor-pointer transition-all ${
-                    selectedPokemon === pokemon.dexId
+                    selectedPokemon?.dexId === pokemon.dexId
                       ? 'border-[#4e8fff] bg-[rgba(78,143,255,0.08)]'
                       : 'border-[#23262f] hover:border-[#4e8fff]'
                   }`}
-                  onClick={() => setSelectedPokemon(pokemon.dexId)}
+                  onClick={() => setSelectedPokemon(pokemon)}
                 >
                   <div className="aspect-square bg-gradient-to-br from-[#15171f] to-[#0e1015] rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                    {pokemon.imageUrl ? (
-                      <img src={pokemon.imageUrl} alt={pokemon.name} className="w-full h-full object-contain" />
+                    {pokemon.image ? (
+                      <img src={pokemon.image} alt={pokemon.name} className="w-full h-full object-contain" />
                     ) : (
                       <div className="text-4xl text-[#565b6b]">?</div>
                     )}
@@ -177,7 +186,7 @@ export function PokemonPage() {
                     ))}
                   </div>
 
-                  {pokemon.isLegendary && (
+                  {pokemon.isShiny && (
                     <div
                       className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(255,201,77,0.14)] border border-[rgba(255,201,77,0.35)] rounded-full text-[10px] font-bold"
                       style={{ color: '#ffc94d', fontFamily: 'JetBrains Mono, monospace' }}
@@ -188,7 +197,7 @@ export function PokemonPage() {
                           fill="currentColor"
                         />
                       </svg>
-                      LEGENDARY
+                      SHINY
                     </div>
                   )}
                 </div>

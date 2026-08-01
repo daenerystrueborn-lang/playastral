@@ -27,8 +27,20 @@ const DEFAULT_PLAN_DISPLAY = { accent: '#4e8fff', name: 'Premium', features: [] 
 
 export function PremiumPage() {
   const { currentPlayer } = useAuth();
-  const { data: plans, isLoading: plansLoading } = useGetPremiumPlans();
-  const { data: status } = useGetPremiumStatus({ query: { enabled: !!currentPlayer } });
+  const { data: plansResponse, isLoading: plansLoading } = useGetPremiumPlans();
+  const { data: statusResponse } = useGetPremiumStatus({ query: { enabled: !!currentPlayer } });
+  // Same envelope-unwrapping concern as plans above — server sends
+  // { premium: { active, plan, expiresAt, ... } }.
+  const status = (statusResponse as { premium?: any } | undefined)?.premium ?? statusResponse;
+
+  // useGetPremiumPlans's `data` may come back either as the raw array or as
+  // the raw API envelope { plans: [...] } depending on how the generated
+  // client unwraps responses — normalize here so every read below can
+  // safely assume `plans` is an array (or undefined). Same fix as home.tsx's
+  // leaderboard normalization.
+  const plans = Array.isArray(plansResponse)
+    ? plansResponse
+    : (plansResponse as { plans?: typeof plansResponse } | undefined)?.plans;
 
   function handleBuy(planId: string) {
     // Fetch WhatsApp link then redirect — no payment data touches this site
