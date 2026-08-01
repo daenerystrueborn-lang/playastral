@@ -73,8 +73,8 @@ export function ShopPage() {
 
         {currentPlayer && (
           <div className="flex items-center gap-3">
-            <CurrencyBadge label="Solars" value={currentPlayer.solars} color="#4e8fff" />
-            <CurrencyBadge label="Gems" value={currentPlayer.gems} color="#3ecf8e" />
+            <CurrencyBadge label="Solars" value={currentPlayer.wallet?.solars ?? 0} color="#4e8fff" />
+            <CurrencyBadge label="Gems" value={currentPlayer.wallet?.gems ?? 0} color="#3ecf8e" />
           </div>
         )}
       </div>

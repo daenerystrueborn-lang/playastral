@@ -187,13 +187,13 @@ export function HomePage() {
                       )}
                     </div>
                     <div className="text-xs text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                      Level {entry.level} • {entry.xp.toLocaleString()} XP
+                      Level {entry.level} • {(entry.xp ?? 0).toLocaleString()} XP
                     </div>
                   </div>
 
                   <div className="text-right">
                     <div className="text-sm font-bold" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-                      {entry.score.toLocaleString()}
+                      {(entry.xp ?? 0).toLocaleString()}
                     </div>
                     <div className="text-xs text-[#565b6b]">Score</div>
                   </div>

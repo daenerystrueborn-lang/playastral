@@ -99,7 +99,7 @@ export function TopNav() {
                     strokeWidth="0.8"
                   />
                 </svg>
-                {currentPlayer.solars.toLocaleString()}
+                {(currentPlayer.wallet?.solars ?? 0).toLocaleString()}
               </div>
             )}
 

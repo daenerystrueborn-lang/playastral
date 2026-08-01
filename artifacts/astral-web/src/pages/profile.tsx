@@ -78,10 +78,22 @@ function OwnProfile() {
   return (
     <PageWrapper>
       <div className="max-w-2xl mx-auto">
+        {/* Banner */}
+        <div
+          className="w-full h-32 sm:h-44 rounded-2xl mb-[-2.5rem] overflow-hidden border"
+          style={{ borderColor: '#23262f' }}
+        >
+          <img
+            src={currentPlayer.bannerUrl || '/default-banner.png'}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+
         {/* Header */}
-        <div className="flex items-start gap-5 mb-8">
+        <div className="flex items-start gap-5 mb-8 relative">
           <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-extrabold shrink-0"
+            className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center text-3xl font-extrabold shrink-0"
             style={{
               background: 'linear-gradient(135deg, #4e8fff22, #4e8fff44)',
               border: '2px solid #4e8fff44',
@@ -89,11 +101,11 @@ function OwnProfile() {
               color: '#4e8fff',
             }}
           >
-            {currentPlayer.avatarUrl ? (
-              <img src={currentPlayer.avatarUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
-            ) : (
-              (currentPlayer.name ?? currentPlayer.phone ?? '?').charAt(0).toUpperCase()
-            )}
+            <img
+              src={currentPlayer.avatarUrl || '/default-pfp.png'}
+              alt=""
+              className="w-full h-full object-cover rounded-2xl"
+            />
           </div>
 
           <div className="flex-1 min-w-0">
@@ -152,9 +164,9 @@ function OwnProfile() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <StatCard label="Level" value={String(currentPlayer.level)} />
-          <StatCard label="XP" value={currentPlayer.xp.toLocaleString()} />
-          <StatCard label="Solars" value={currentPlayer.solars.toLocaleString()} />
-          <StatCard label="Streak" value={`${currentPlayer.streak}d`} />
+          <StatCard label="XP" value={(currentPlayer.xp ?? 0).toLocaleString()} />
+          <StatCard label="Solars" value={(currentPlayer.wallet?.solars ?? 0).toLocaleString()} />
+          <StatCard label="Streak" value={`${currentPlayer.dailyStreak ?? 0}d`} />
         </div>
 
         {/* Collections */}
@@ -198,9 +210,20 @@ function PublicProfile({ id }: { id: string }) {
   return (
     <PageWrapper>
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-start gap-5 mb-8">
+        <div
+          className="w-full h-32 sm:h-44 rounded-2xl mb-[-2.5rem] overflow-hidden border"
+          style={{ borderColor: '#23262f' }}
+        >
+          <img
+            src={player.bannerUrl || '/default-banner.png'}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        <div className="flex items-start gap-5 mb-8 relative">
           <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-extrabold shrink-0"
+            className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center text-3xl font-extrabold shrink-0"
             style={{
               background: 'linear-gradient(135deg, #4e8fff22, #4e8fff44)',
               border: '2px solid #4e8fff44',
@@ -208,11 +231,11 @@ function PublicProfile({ id }: { id: string }) {
               color: '#4e8fff',
             }}
           >
-            {player.avatarUrl ? (
-              <img src={player.avatarUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
-            ) : (
-              (player.name ?? '?').charAt(0).toUpperCase()
-            )}
+            <img
+              src={player.avatarUrl || '/default-pfp.png'}
+              alt=""
+              className="w-full h-full object-cover rounded-2xl"
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -234,7 +257,7 @@ function PublicProfile({ id }: { id: string }) {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <StatCard label="Level" value={String(player.level)} />
-          <StatCard label="XP" value={player.xp.toLocaleString()} />
+          <StatCard label="XP" value={(player.xp ?? 0).toLocaleString()} />
           <StatCard label="Cards" value={String(player.cardCount)} />
           <StatCard label="Pokemon" value={String(player.pokemonCount)} />
         </div>
