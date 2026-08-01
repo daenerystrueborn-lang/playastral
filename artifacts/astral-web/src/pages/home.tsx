@@ -3,7 +3,14 @@ import { useGetLeaderboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 
 export function HomePage() {
-  const { data: leaderboard, isLoading } = useGetLeaderboard({ limit: 10 });
+  const { data: leaderboardResponse, isLoading } = useGetLeaderboard({ limit: 10 });
+  // useGetLeaderboard's `data` may come back either as the raw array or as
+  // the raw API envelope { leaderboard: [...] } depending on how the
+  // generated client unwraps responses — normalize here so every read
+  // below can safely assume `leaderboard` is an array (or undefined).
+  const leaderboard = Array.isArray(leaderboardResponse)
+    ? leaderboardResponse
+    : (leaderboardResponse as { leaderboard?: typeof leaderboardResponse } | undefined)?.leaderboard;
 
   return (
     <PageWrapper>
@@ -90,7 +97,7 @@ export function HomePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         <StatCard label="Active Groups" value="—" />
         <StatCard label="Cards In Circulation" value="—" />
-        <StatCard label="Trainers Registered" value={leaderboard?.length.toLocaleString() || '—'} />
+        <StatCard label="Trainers Registered" value={leaderboard?.length != null ? leaderboard.length.toLocaleString() : '—'} />
         <StatCard label="Legendary Drops" value="—" />
       </div>
 
