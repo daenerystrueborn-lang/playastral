@@ -97,7 +97,7 @@ export function PremiumPage() {
                     {plan.name}
                   </h2>
                   <div className="text-3xl font-extrabold" style={{ color: accent, fontFamily: 'Syne, sans-serif' }}>
-                    ₦{plan.price.toLocaleString()}
+                    ₦{(plan.price ?? 0).toLocaleString()}
                   </div>
                 </div>
 
