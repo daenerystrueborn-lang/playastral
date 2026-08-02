@@ -4,43 +4,16 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Marketing copy for each plan lives here, not on the server — the API
-// (/api/premium/plans) only ever sends { id, label, priceNaira, durationDays }.
-const PLAN_DISPLAY: Record<string, { accent: string; name: string; features: string[] }> = {
-  weekly: {
-    accent: '#4e8fff',
-    name: 'Weekly',
-    features: ['Premium role & badge', 'Boosted drop rates', 'Priority support'],
-  },
-  monthly: {
-    accent: '#3ecf8e',
-    name: 'Monthly',
-    features: ['Everything in Weekly', 'Exclusive frames', 'Bonus daily rewards'],
-  },
-  yearly: {
-    accent: '#ffc94d',
-    name: 'Yearly',
-    features: ['Everything in Monthly', 'Best value per month', 'Early access to new features'],
-  },
+const PLAN_ACCENTS: Record<string, string> = {
+  weekly: '#4e8fff',
+  monthly: '#3ecf8e',
+  yearly: '#ffc94d',
 };
-const DEFAULT_PLAN_DISPLAY = { accent: '#4e8fff', name: 'Premium', features: [] as string[] };
 
 export function PremiumPage() {
   const { currentPlayer } = useAuth();
-  const { data: plansResponse, isLoading: plansLoading } = useGetPremiumPlans();
-  const { data: statusResponse } = useGetPremiumStatus({ query: { enabled: !!currentPlayer } });
-  // Same envelope-unwrapping concern as plans above — server sends
-  // { premium: { active, plan, expiresAt, ... } }.
-  const status = (statusResponse as { premium?: any } | undefined)?.premium ?? statusResponse;
-
-  // useGetPremiumPlans's `data` may come back either as the raw array or as
-  // the raw API envelope { plans: [...] } depending on how the generated
-  // client unwraps responses — normalize here so every read below can
-  // safely assume `plans` is an array (or undefined). Same fix as home.tsx's
-  // leaderboard normalization.
-  const plans = Array.isArray(plansResponse)
-    ? plansResponse
-    : (plansResponse as { plans?: typeof plansResponse } | undefined)?.plans;
+  const { data: plans, isLoading: plansLoading } = useGetPremiumPlans();
+  const { data: status } = useGetPremiumStatus({ query: { enabled: !!currentPlayer } });
 
   function handleBuy(planId: string) {
     // Fetch WhatsApp link then redirect — no payment data touches this site
@@ -92,8 +65,7 @@ export function PremiumPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans?.map(plan => {
-            const display = PLAN_DISPLAY[plan.id] ?? DEFAULT_PLAN_DISPLAY;
-            const accent = display.accent;
+            const accent = PLAN_ACCENTS[plan.id] ?? '#4e8fff';
             const isActive = status?.plan === plan.id && status?.active;
 
             return (
@@ -119,18 +91,18 @@ export function PremiumPage() {
                     className="text-xs font-bold uppercase tracking-widest mb-2"
                     style={{ color: accent, fontFamily: 'JetBrains Mono, monospace' }}
                   >
-                    {plan.durationDays != null ? `${plan.durationDays} days` : plan.label}
+                    {plan.duration}
                   </div>
                   <h2 className="text-2xl font-extrabold mb-1" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    {display.name}
+                    {plan.name}
                   </h2>
                   <div className="text-3xl font-extrabold" style={{ color: accent, fontFamily: 'Syne, sans-serif' }}>
-                    ₦{(plan.priceNaira ?? 0).toLocaleString()}
+                    ₦{plan.price.toLocaleString()}
                   </div>
                 </div>
 
                 <ul className="space-y-2 flex-1">
-                  {display.features.map(f => (
+                  {plan.features.map(f => (
                     <li key={f} className="flex items-start gap-2 text-sm text-[#9096a6]">
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="mt-0.5 shrink-0" style={{ color: accent }}>
                         <path d="M2 7L5.5 10.5L12 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

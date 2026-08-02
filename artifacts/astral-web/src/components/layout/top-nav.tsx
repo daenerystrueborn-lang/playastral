@@ -11,7 +11,6 @@ export function TopNav() {
 
   const navLinks = [
     { path: '/', label: 'Home' },
-    { path: '/cards', label: 'Cards' },
     { path: '/pokemon', label: 'Pokémon' },
     { path: '/battle', label: 'Battle' },
     { path: '/shop', label: 'Shop' },
@@ -47,20 +46,6 @@ export function TopNav() {
             className="flex items-center gap-2 flex-shrink-0"
             style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.2px' }}
           >
-            <div
-              className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-[13px]"
-              style={{ background: '#4e8fff' }}
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M7 1L8.5 5.5H13L9.5 8.5L11 13L7 10L3 13L4.5 8.5L1 5.5H5.5L7 1Z"
-                  fill="currentColor"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
             <span>
               Astr<span style={{ color: '#4e8fff' }}>al</span>
             </span>

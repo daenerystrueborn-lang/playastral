@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { PageWrapper } from '@/components/layout/page-wrapper';
-import { useGetCardCatalog, useGetMyCards } from '@workspace/api-client-react';
+import { useGetCardCatalog, useGetMyCards, useGetCurrentDrop, useGrabDrop } from '@workspace/api-client-react';
 import { useAuth } from '@/contexts/auth-context';
+import { useQueryClient } from '@tanstack/react-query';
+import { getGetMyCardsQueryKey, getGetCurrentDropQueryKey } from '@workspace/api-client-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -12,27 +14,32 @@ export function CardsPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: catalogResponse, isLoading: catalogLoading } = useGetCardCatalog({
+  const { data: catalogPage, isLoading: catalogLoading } = useGetCardCatalog({
     page,
     limit: 20,
     tier: tierFilter === 'all' ? undefined : tierFilter,
   });
-  // GET /api/cards/catalog sends { cards, total, page, limit } directly —
-  // no extra envelope here, but normalize defensively anyway in case the
-  // generated client ever wraps it differently, same as every other list
-  // endpoint in this app.
-  const catalogPage = catalogResponse as { cards?: any[]; total?: number } | undefined;
 
-  const { data: myCardsResponse, isLoading: myCardsLoading } = useGetMyCards({
+  const { data: myCards, isLoading: myCardsLoading } = useGetMyCards({
     query: { enabled: !!currentPlayer && activeTab === 'owned' },
   });
-  // GET /api/players/me/cards sends { cards: [...] } — unwrap the same way
-  // home.tsx's leaderboard and premium.tsx's plans/status needed to be.
-  const myCards = Array.isArray(myCardsResponse)
-    ? myCardsResponse
-    : (myCardsResponse as { cards?: any[] } | undefined)?.cards;
 
-  const tiers = ['all', '1', '2', '3', '4', '5', '6', 'S'];
+  const { data: currentDrop } = useGetCurrentDrop();
+  const grabDropMutation = useGrabDrop();
+  const queryClient = useQueryClient();
+
+  const handleGrabDrop = () => {
+    if (!currentDrop?.active) return;
+
+    grabDropMutation.mutate(undefined, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetMyCardsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetCurrentDropQueryKey() });
+      },
+    });
+  };
+
+  const tiers = ['all', '1', '2', '3', 'S'];
 
   const filteredMyCards = myCards?.filter(
     (card) =>
@@ -42,6 +49,36 @@ export function CardsPage() {
 
   return (
     <PageWrapper>
+      {/* Live drop banner */}
+      {currentDrop?.active && currentDrop.card && (
+        <div
+          className="mb-6 p-4 rounded-2xl border flex items-center gap-4"
+          style={{
+            background: 'linear-gradient(90deg, rgba(78,143,255,0.12), rgba(62,207,142,0.08))',
+            borderColor: '#4e8fff',
+          }}
+        >
+          <div className="flex-1">
+            <div
+              className="text-xs font-bold uppercase tracking-wide mb-1"
+              style={{ color: '#4e8fff', fontFamily: 'JetBrains Mono, monospace' }}
+            >
+              Live Drop
+            </div>
+            <div className="font-bold text-lg" style={{ fontFamily: 'Syne, sans-serif' }}>
+              {currentDrop.card.title}
+            </div>
+            <div className="text-sm text-[#9096a6]">Grab it before it expires!</div>
+          </div>
+          <Button
+            onClick={handleGrabDrop}
+            disabled={grabDropMutation.isPending || !currentPlayer}
+            className="shrink-0"
+          >
+            {grabDropMutation.isPending ? 'Grabbing...' : 'Grab Now'}
+          </Button>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

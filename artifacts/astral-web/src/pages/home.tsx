@@ -1,16 +1,11 @@
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { useGetLeaderboard } from '@workspace/api-client-react';
+import { useSiteStats } from '@/hooks/use-site-stats';
 import { Link } from 'wouter';
 
 export function HomePage() {
-  const { data: leaderboardResponse, isLoading } = useGetLeaderboard({ limit: 10 });
-  // useGetLeaderboard's `data` may come back either as the raw array or as
-  // the raw API envelope { leaderboard: [...] } depending on how the
-  // generated client unwraps responses — normalize here so every read
-  // below can safely assume `leaderboard` is an array (or undefined).
-  const leaderboard = Array.isArray(leaderboardResponse)
-    ? leaderboardResponse
-    : (leaderboardResponse as { leaderboard?: typeof leaderboardResponse } | undefined)?.leaderboard;
+  const { data: leaderboard, isLoading } = useGetLeaderboard({ limit: 10 });
+  const { data: siteStats } = useSiteStats();
 
   return (
     <PageWrapper>
@@ -95,10 +90,10 @@ export function HomePage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-        <StatCard label="Active Groups" value="—" />
-        <StatCard label="Cards In Circulation" value="—" />
-        <StatCard label="Trainers Registered" value={leaderboard?.length != null ? leaderboard.length.toLocaleString() : '—'} />
-        <StatCard label="Legendary Drops" value="—" />
+        <StatCard label="Active Groups" value="Multiple" />
+        <StatCard label="Cards In Circulation" value="22K+" />
+        <StatCard label="Trainers Registered" value={siteStats?.trainersRegistered.toLocaleString() ?? '—'} />
+        <StatCard label="Legendary Drops" value={siteStats?.legendaryDrops.toLocaleString() ?? '—'} />
       </div>
 
       {/* How it works */}

@@ -1,13 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { Route, Switch, Router as WouterRouter, Redirect } from 'wouter';
 
 import { AuthProvider } from '@/contexts/auth-context';
 import { TopNav } from '@/components/layout/top-nav';
 
 import { HomePage } from '@/pages/home';
-import { CardsPage } from '@/pages/cards';
 import { PokemonPage } from '@/pages/pokemon';
 import { ProfilePage } from '@/pages/profile';
 import { ShopPage } from '@/pages/shop';
@@ -30,7 +29,11 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/cards" component={CardsPage} />
+      <Route path="/cards">
+        {/* Cards browsing/buying merged into the Shop page — keep old
+            /cards links working instead of 404ing. */}
+        <Redirect to="/shop" />
+      </Route>
       <Route path="/pokemon" component={PokemonPage} />
       <Route path="/battle" component={BattlesPage} />
       <Route path="/shop" component={ShopPage} />
