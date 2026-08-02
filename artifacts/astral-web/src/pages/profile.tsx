@@ -33,11 +33,8 @@ function OwnProfile() {
   const qc = useQueryClient();
   const updateMutation = useUpdatePlayer();
 
-  const { data: cardsResponse } = useGetMyCards({ query: { enabled: !!currentPlayer } });
-  const { data: pokemonResponse } = useGetMyPokemon({ query: { enabled: !!currentPlayer } });
-  // GET /api/players/me/cards sends { cards: [...] }, /pokemon sends { pokemon: [...] }.
-  const cards = Array.isArray(cardsResponse) ? cardsResponse : (cardsResponse as any)?.cards;
-  const pokemon = Array.isArray(pokemonResponse) ? pokemonResponse : (pokemonResponse as any)?.pokemon;
+  const { data: cards } = useGetMyCards({ query: { enabled: !!currentPlayer } });
+  const { data: pokemon } = useGetMyPokemon({ query: { enabled: !!currentPlayer } });
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -49,7 +46,7 @@ function OwnProfile() {
     return (
       <PageWrapper>
         <div className="text-center py-24 text-[#565b6b]">
-          <p className="text-lg" style={{ fontFamily: 'Syne, sans-serif' }}>Sign in to view your profile</p>
+          <p className="text-lg">Sign in to view your profile</p>
         </div>
       </PageWrapper>
     );
@@ -58,7 +55,7 @@ function OwnProfile() {
   function startEdit() {
     setName(currentPlayer!.name ?? '');
     setBio(currentPlayer!.bio ?? '');
-    setAvatarUrl((currentPlayer as any)!.pfp ?? '');
+    setAvatarUrl(currentPlayer!.avatarUrl ?? '');
     setError('');
     setEditing(true);
   }
@@ -69,9 +66,7 @@ function OwnProfile() {
       { data: { name: name || undefined, bio: bio || undefined, avatarUrl: avatarUrl || undefined } },
       {
         onSuccess: (updated) => {
-          // PATCH /api/players/me sends { player: {...} } — unwrap it.
-          const updatedPlayer = (updated as any)?.player ?? updated;
-          setCurrentPlayer(updatedPlayer);
+          setCurrentPlayer(updated);
           qc.invalidateQueries({ queryKey: getGetMeQueryKey() });
           setEditing(false);
         },
@@ -83,11 +78,17 @@ function OwnProfile() {
   return (
     <PageWrapper>
       <div className="max-w-2xl mx-auto">
-        {/* Banner — no bannerUrl field exists server-side; using a static gradient instead */}
+        {/* Banner */}
         <div
           className="w-full h-32 sm:h-44 rounded-2xl mb-[-2.5rem] overflow-hidden border"
-          style={{ borderColor: '#23262f', background: 'linear-gradient(135deg, rgba(78,143,255,0.15), rgba(62,207,142,0.08))' }}
-        />
+          style={{ borderColor: '#23262f' }}
+        >
+          <img
+            src={currentPlayer.bannerUrl || '/default-banner.png'}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
 
         {/* Header */}
         <div className="flex items-start gap-5 mb-8 relative">
@@ -96,12 +97,11 @@ function OwnProfile() {
             style={{
               background: 'linear-gradient(135deg, #4e8fff22, #4e8fff44)',
               border: '2px solid #4e8fff44',
-              fontFamily: 'Syne, sans-serif',
               color: '#4e8fff',
             }}
           >
             <img
-              src={(currentPlayer as any).pfp || '/default-pfp.png'}
+              src={currentPlayer.avatarUrl || '/default-pfp.png'}
               alt=""
               className="w-full h-full object-cover rounded-2xl"
             />
@@ -111,16 +111,15 @@ function OwnProfile() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1
                 className="text-2xl font-extrabold"
-                style={{ fontFamily: 'Syne, sans-serif' }}
               >
                 {currentPlayer.name ?? 'Unnamed Trainer'}
               </h1>
-              {(currentPlayer as any).premium?.active && (
+              {currentPlayer.premiumActive && (
                 <span
                   className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                   style={{ background: '#ffc94d22', color: '#ffc94d', border: '1px solid #ffc94d44', fontFamily: 'JetBrains Mono, monospace' }}
                 >
-                  Premium
+                  {currentPlayer.premiumPlan ?? 'Premium'}
                 </span>
               )}
             </div>
@@ -165,7 +164,7 @@ function OwnProfile() {
           <StatCard label="Level" value={String(currentPlayer.level)} />
           <StatCard label="XP" value={(currentPlayer.xp ?? 0).toLocaleString()} />
           <StatCard label="Solars" value={(currentPlayer.wallet?.solars ?? 0).toLocaleString()} />
-          <StatCard label="Gems" value={((currentPlayer as any).wallet?.gems ?? 0).toLocaleString()} />
+          <StatCard label="Streak" value={`${currentPlayer.dailyStreak ?? 0}d`} />
         </div>
 
         {/* Collections */}
@@ -181,9 +180,7 @@ function OwnProfile() {
 // ─── Public Profile ───────────────────────────────────────────────────────────
 
 function PublicProfile({ id }: { id: string }) {
-  const { data: playerResponse, isLoading, error } = useGetPlayer(id);
-  // GET /api/players/:id sends { player: {...} } — unwrap it.
-  const player = (playerResponse as any)?.player ?? playerResponse;
+  const { data: player, isLoading, error } = useGetPlayer(id);
 
   if (isLoading) {
     return (
@@ -211,11 +208,16 @@ function PublicProfile({ id }: { id: string }) {
   return (
     <PageWrapper>
       <div className="max-w-2xl mx-auto">
-        {/* Banner — no bannerUrl field exists server-side; using a static gradient instead */}
         <div
           className="w-full h-32 sm:h-44 rounded-2xl mb-[-2.5rem] overflow-hidden border"
-          style={{ borderColor: '#23262f', background: 'linear-gradient(135deg, rgba(78,143,255,0.15), rgba(62,207,142,0.08))' }}
-        />
+          style={{ borderColor: '#23262f' }}
+        >
+          <img
+            src={player.bannerUrl || '/default-banner.png'}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
 
         <div className="flex items-start gap-5 mb-8 relative">
           <div
@@ -223,27 +225,26 @@ function PublicProfile({ id }: { id: string }) {
             style={{
               background: 'linear-gradient(135deg, #4e8fff22, #4e8fff44)',
               border: '2px solid #4e8fff44',
-              fontFamily: 'Syne, sans-serif',
               color: '#4e8fff',
             }}
           >
             <img
-              src={(player as any).pfp || '/default-pfp.png'}
+              src={player.avatarUrl || '/default-pfp.png'}
               alt=""
               className="w-full h-full object-cover rounded-2xl"
             />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-extrabold" style={{ fontFamily: 'Syne, sans-serif' }}>
+              <h1 className="text-2xl font-extrabold">
                 {player.name ?? 'Unnamed Trainer'}
               </h1>
-              {(player as any).premium?.active && (
+              {player.premiumActive && (
                 <span
                   className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                   style={{ background: '#ffc94d22', color: '#ffc94d', border: '1px solid #ffc94d44', fontFamily: 'JetBrains Mono, monospace' }}
                 >
-                  Premium
+                  {player.premiumPlan ?? 'Premium'}
                 </span>
               )}
             </div>
@@ -270,7 +271,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
       <div className="text-[11px] text-[#565b6b] uppercase tracking-wider mb-1.5" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
         {label}
       </div>
-      <div className="text-2xl font-extrabold" style={{ fontFamily: 'Syne, sans-serif' }}>
+      <div className="text-2xl font-extrabold">
         {value}
       </div>
     </div>
@@ -295,7 +296,7 @@ function CollectionCard({ label, count, icon }: { label: string; count: number; 
         )}
       </div>
       <div>
-        <div className="text-xl font-extrabold" style={{ fontFamily: 'Syne, sans-serif' }}>{count}</div>
+        <div className="text-xl font-extrabold">{count}</div>
         <div className="text-xs text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{label}</div>
       </div>
     </div>
