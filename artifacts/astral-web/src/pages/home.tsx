@@ -148,7 +148,7 @@ export function HomePage() {
             <div className="p-8 text-center text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
               Loading...
             </div>
-          ) : !leaderboard || leaderboard.length === 0 ? (
+          ) : !Array.isArray(leaderboard) || leaderboard.length === 0 ? (
             <div className="p-8 text-center text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
               No players yet
             </div>

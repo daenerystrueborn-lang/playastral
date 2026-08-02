@@ -116,7 +116,7 @@ export function ShopPage() {
                   {CATEGORY_LABELS[category] ?? category}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {catItems?.map(item => (
+                  {Array.isArray(catItems) && catItems.map(item => (
                     <div key={item.id} className="bg-[#0e1015] border border-[#23262f] rounded-2xl p-5 flex flex-col gap-4 hover:border-[#4e8fff44] transition-colors">
                       <div className="flex-1">
                         <div className="font-bold mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{item.name}</div>
@@ -218,7 +218,7 @@ function CardsShopTab({ currentPlayer }: { currentPlayer: any }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {prices?.tiers.map(t => (
+            {Array.isArray(prices?.tiers) && prices.tiers.map(t => (
               <div key={t.tier} className="bg-[#0e1015] border border-[#23262f] rounded-2xl p-4 flex flex-col items-center gap-2 text-center">
                 <div className="text-sm" style={{ color: t.tier === '6' ? '#ffc94d' : '#4e8fff' }}>{t.stars}</div>
                 <div className="text-xs text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>Tier {t.tier}</div>
@@ -240,7 +240,7 @@ function CardsShopTab({ currentPlayer }: { currentPlayer: any }) {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="aspect-[9/16] rounded-2xl" />)}
           </div>
-        ) : !catalog || catalog.length === 0 ? (
+        ) : !Array.isArray(catalog) || catalog.length === 0 ? (
           <div className="text-center py-12 text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>No cards found</div>
         ) : (
           <>
