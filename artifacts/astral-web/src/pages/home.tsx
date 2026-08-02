@@ -11,7 +11,7 @@ export function HomePage() {
     <PageWrapper>
       {/* Hero section */}
       <section
-        className="relative px-10 py-20 mb-12 rounded-[28px] overflow-hidden border flex flex-col items-center text-center"
+        className="relative px-5 sm:px-8 md:px-10 py-14 sm:py-16 md:py-20 mb-12 rounded-[28px] overflow-hidden border flex flex-col items-center text-center"
         style={{
           borderColor: '#23262f',
           background: 'linear-gradient(135deg, rgba(78,143,255,0.08), rgba(78,143,255,0.03))',
@@ -36,7 +36,7 @@ export function HomePage() {
           </div>
 
           <h1
-            className="text-5xl md:text-6xl font-extrabold mb-4"
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 break-words"
             style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.5px', lineHeight: 1.1 }}
           >
             Collect. Battle. <br />

@@ -64,7 +64,7 @@ export function PremiumPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans?.map(plan => {
+          {Array.isArray(plans) && plans.map(plan => {
             const accent = PLAN_ACCENTS[plan.id] ?? '#4e8fff';
             const isActive = status?.plan === plan.id && status?.active;
 

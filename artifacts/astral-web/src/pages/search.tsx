@@ -21,7 +21,12 @@ export function SearchPage() {
     { query: { enabled: debouncedQuery.length >= 2 } }
   );
 
-  const hasResults = data && (data.players.length + data.cards.length + data.pokemon.length) > 0;
+  const hasResults =
+    !!data &&
+    Array.isArray(data.players) &&
+    Array.isArray(data.cards) &&
+    Array.isArray(data.pokemon) &&
+    (data.players.length + data.cards.length + data.pokemon.length) > 0;
 
   return (
     <PageWrapper>

@@ -137,7 +137,7 @@ export function PokemonPage() {
             <div className="text-center py-12 text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
               Finding Pokémon...
             </div>
-          ) : !wildPokemon || wildPokemon.length === 0 ? (
+          ) : !Array.isArray(wildPokemon) || wildPokemon.length === 0 ? (
             <div className="text-center py-12 text-[#565b6b]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
               No wild Pokémon found
             </div>

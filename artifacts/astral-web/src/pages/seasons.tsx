@@ -95,7 +95,7 @@ export function SeasonsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
             </div>
-          ) : abilities && abilities.length > 0 ? (
+          ) : Array.isArray(abilities) && abilities.length > 0 ? (
             <section>
               <h3
                 className="text-xs font-bold uppercase tracking-widest text-[#565b6b] mb-4"
