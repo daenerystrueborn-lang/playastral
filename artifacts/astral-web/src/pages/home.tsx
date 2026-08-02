@@ -124,20 +124,19 @@ export function HomePage() {
 
       {/* Live leaderboard */}
       <section>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
           <div>
             <h2
-              className="text-3xl font-extrabold mb-1"
-              style={{ fontFamily: 'Syne, sans-serif', letterSpacing: '-0.3px' }}
+              className="text-2xl sm:text-3xl font-extrabold mb-1"
+              style={{ letterSpacing: '-0.3px' }}
             >
               Live Leaderboard
             </h2>
             <p className="text-[#9096a6] text-sm">Top trainers by XP</p>
           </div>
           <Link
-            href="/cards"
-            className="text-[#4e8fff] text-sm font-semibold hover:underline"
-            style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+            href="/shop"
+            className="text-[#4e8fff] text-sm font-semibold hover:underline shrink-0"
           >
             View all →
           </Link>
